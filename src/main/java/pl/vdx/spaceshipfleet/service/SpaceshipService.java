@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.vdx.spaceshipfleet.dto.SpaceshipRequestDto;
 import pl.vdx.spaceshipfleet.dto.SpaceshipResponseDto;
+import pl.vdx.spaceshipfleet.exception.NotFoundException;
 import pl.vdx.spaceshipfleet.model.Spaceship;
 import pl.vdx.spaceshipfleet.repository.SpaceshipRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -15,10 +18,9 @@ public class SpaceshipService {
 
     private final SpaceshipRepository repository;
 
-    public List<SpaceshipResponseDto> getAll() {
-        return repository.findAll().stream()
-                .map(this::toDto)
-                .toList();
+    public Page<SpaceshipResponseDto> getAll(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(this::toDto);
     }
 
     public SpaceshipResponseDto create(SpaceshipRequestDto dto) {
@@ -56,4 +58,27 @@ public class SpaceshipService {
                 s.getFuelLevelPercent()
         );
     }
+
+    public SpaceshipResponseDto getById(Long id) {
+        Spaceship s = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Spaceship not found: " + id));
+        return toDto(s);
+    }
+
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new NotFoundException("Spaceship not found: " + id);
+        }
+        repository.deleteById(id);
+    }
+
+    public SpaceshipResponseDto update(Long id, SpaceshipRequestDto dto) {
+        Spaceship s = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Spaceship not found: " + id));
+        updateEntityFromDto(s, dto);
+        validateCrew(s);
+        Spaceship saved = repository.save(s);
+        return toDto(saved);
+    }
+
 }

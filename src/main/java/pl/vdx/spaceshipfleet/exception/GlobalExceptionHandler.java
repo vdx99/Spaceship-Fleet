@@ -44,4 +44,13 @@ public class GlobalExceptionHandler {
         pd.setDetail(ex.getMessage());
         return pd;
     }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ProblemDetail handleNotFound(NotFoundException ex) {
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        pd.setTitle("Not found");
+        pd.setDetail(ex.getMessage());
+        return pd;
+    }
+
 }
