@@ -18,9 +18,24 @@ public class SpaceshipService {
 
     private final SpaceshipRepository repository;
 
-    public Page<SpaceshipResponseDto> getAll(Pageable pageable) {
-        return repository.findAll(pageable)
-                .map(this::toDto);
+    public Page<SpaceshipResponseDto> getAll(String classType,
+                                             String homeBase,
+                                             Pageable pageable) {
+        Page<Spaceship> page;
+
+        if (classType != null && !classType.isBlank() &&
+                homeBase != null && !homeBase.isBlank()) {
+            page = repository.findByClassTypeContainingIgnoreCaseAndHomeBaseContainingIgnoreCase(
+                    classType, homeBase, pageable);
+        } else if (classType != null && !classType.isBlank()) {
+            page = repository.findByClassTypeContainingIgnoreCase(classType, pageable);
+        } else if (homeBase != null && !homeBase.isBlank()) {
+            page = repository.findByHomeBaseContainingIgnoreCase(homeBase, pageable);
+        } else {
+            page = repository.findAll(pageable);
+        }
+
+        return page.map(this::toDto);
     }
 
     public SpaceshipResponseDto create(SpaceshipRequestDto dto) {

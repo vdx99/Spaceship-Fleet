@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.vdx.spaceshipfleet.dto.SpaceshipRequestDto;
@@ -21,8 +22,11 @@ public class SpaceshipController {
     private final RequestCounterService counterService;
 
     @GetMapping
-    public Page<SpaceshipResponseDto> getAll(@PageableDefault(size = 10) Pageable pageable) {
-        return service.getAll(pageable);
+    public Page<SpaceshipResponseDto> getAll(
+            @RequestParam(required = false) String classType,
+            @RequestParam(required = false) String homeBase,
+            @PageableDefault(size = 10) Pageable pageable) {
+        return service.getAll(classType, homeBase, pageable);
     }
 
     @GetMapping("/{id}")
