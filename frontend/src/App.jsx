@@ -18,12 +18,23 @@ function App() {
 
   const [requestsCount, setRequestsCount] = useState(null);
 
+  const authHeader = 'Basic ' + btoa('admin:admin');
+
   useEffect(() => {
     const fetchSpaceships = async () => {
       setLoading(true);
       setError('');
       try {
-        const response = await fetch('http://localhost:8080/api/spaceships?page=0&size=20');
+        const response = await fetch(
+          'http://localhost:8080/api/spaceships?page=0&size=20',
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: authHeader
+            },
+            credentials: 'include'
+          }
+        );
         if (!response.ok) {
           throw new Error(`HTTP error ${response.status}`);
         }
@@ -38,11 +49,18 @@ function App() {
 
     const fetchRequestsCount = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/metrics/requests-count');
+        const response = await fetch(
+          'http://localhost:8080/api/metrics/requests-count',
+          {
+            headers: {
+              Authorization: authHeader
+            },
+            credentials: 'include'
+          }
+        );
         if (!response.ok) {
           throw new Error(`HTTP error ${response.status}`);
         }
-        // jeśli endpoint zwraca JSON, użyj response.json()
         const text = await response.text();
         setRequestsCount(Number(text));
       } catch (e) {
@@ -52,11 +70,19 @@ function App() {
 
     fetchSpaceships();
     fetchRequestsCount();
-  }, []);
+  }, [authHeader]);
 
   const refreshRequestsCount = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/metrics/requests-count');
+      const response = await fetch(
+        'http://localhost:8080/api/metrics/requests-count',
+        {
+          headers: {
+            Authorization: authHeader
+          },
+          credentials: 'include'
+        }
+      );
       if (!response.ok) {
         throw new Error(`HTTP error ${response.status}`);
       }
@@ -141,7 +167,11 @@ function App() {
                       const response = await fetch(
                         `http://localhost:8080/api/spaceships/${s.id}`,
                         {
-                          method: 'DELETE'
+                          method: 'DELETE',
+                          headers: {
+                            Authorization: authHeader
+                          },
+                          credentials: 'include'
                         }
                       );
                       if (!response.ok) {
@@ -149,7 +179,6 @@ function App() {
                         throw new Error(`HTTP ${response.status}: ${errText}`);
                       }
                       setSpaceships(prev => prev.filter(x => x.id !== s.id));
-                      // po DELETE też możesz odświeżyć licznik
                       refreshRequestsCount();
                     } catch (e) {
                       setError(e.message);
@@ -190,9 +219,11 @@ function App() {
             const response = await fetch(url, {
               method,
               headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                Authorization: authHeader
               },
-              body: JSON.stringify(form)
+              body: JSON.stringify(form),
+              credentials: 'include'
             });
             if (!response.ok) {
               const errText = await response.text();
@@ -217,7 +248,6 @@ function App() {
               fuelLevelPercent: 0
             });
             setEditingId(null);
-            // po operacji też odśwież licznik
             refreshRequestsCount();
           } catch (e) {
             setError(e.message);
@@ -251,7 +281,6 @@ function App() {
             <option value="FIGHTER">FIGHTER</option>
             <option value="CARGO">CARGO</option>
             <option value="EXPLORER">EXPLORER</option>
-            {/* dopasuj do swoich enumów */}
           </select>
         </label>
 
