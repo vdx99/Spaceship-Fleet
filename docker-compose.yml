@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spaceship-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: spaceship-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
